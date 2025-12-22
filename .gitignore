@@ -1,0 +1,28 @@
+# Arduino / C++ build artifacts
+*.o
+*.obj
+*.elf
+*.bin
+*.hex
+*.eep
+*.map
+*.lst
+*.out
+
+# Archives
+*.zip
+*.tar
+*.gz
+
+# Editor/IDE
+.vscode/
+.idea/
+*.code-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Arduino cache
+*.ino.cpp
+.build/
