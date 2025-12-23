@@ -1,7 +1,7 @@
 #pragma once
 
-#include <FastLED.h>
 #include "Mode.h"
+#include "Renderer.h"
 
 namespace LedLayer {
 
@@ -15,7 +15,7 @@ enum class TrackType : uint8_t {
 
 struct ColorTrack {
     bool active = false;
-    CRGB color = CRGB::Black;
+    RGB color = {0, 0, 0};
 };
 
 struct BrightnessTrack {
@@ -40,14 +40,14 @@ struct MotionTrack {
     bool active = false;
     ModeType pattern = ModeType::MOTION_SOLID;
     uint8_t segmentPixels = 1;
-    CRGB color = CRGB::White;
+    RGB color = {255, 255, 255};
     float speed = 1.0f;
 };
 
 static const uint8_t MAX_OVERLAYS = 8;
 struct OverlayMarker {
     float pos = 0.0f;
-    CRGB color = CRGB::White;
+    RGB color = {255, 255, 255};
     uint8_t thickness = 1;
 };
 

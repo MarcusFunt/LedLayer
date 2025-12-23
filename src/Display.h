@@ -1,9 +1,11 @@
 #pragma once
 
-#include <FastLED.h>
+#pragma once
+
 #include "Layout.h"
 #include "Layer.h"
 #include "Notification.h"
+#include "Renderer.h"
 #include "Tracks.h"
 
 namespace LedLayer {
@@ -11,7 +13,7 @@ namespace LedLayer {
 template<uint8_t MAX_LAYERS = 8, uint8_t MAX_NOTIFS = 4>
 class Display {
 public:
-    Display(CRGB* leds, Layout& layout);
+    Display(Renderer& renderer, Layout& layout);
 
     bool addLayer(const LayerConfig& cfg);
 
@@ -25,7 +27,7 @@ private:
     static TrackType modeToTrack(ModeType mode);
     static bool isExclusiveTrack(TrackType track);
 
-    CRGB* _leds;
+    Renderer& _renderer;
     Layout& _layout;
     LayerConfig _layers[MAX_LAYERS];
     uint8_t _layerCount = 0;

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <FastLED.h>
 #include "Mode.h"
+#include "Renderer.h"
 
 namespace LedLayer {
 
@@ -26,11 +26,11 @@ struct LayerConfig {
 
     struct PaletteParam {
         uint8_t count = 0;
-        CRGB colors[8];
+        RGB colors[8];
     } palette;
     struct GradientParam {
-        CRGB from = CRGB::Black;
-        CRGB to   = CRGB::White;
+        RGB from = {0, 0, 0};
+        RGB to   = {255, 255, 255};
     } gradient;
     struct BrightnessParam {
         float gamma = 1.0f;
@@ -40,12 +40,12 @@ struct LayerConfig {
     } mask;
     struct MotionParam {
         uint8_t segmentPixels = 3;
-        CRGB color = CRGB::White;
+        RGB color = {255, 255, 255};
         float speed = 1.0f;
     } motion;
     struct OverlayParam {
         float pos = 0.0f;
-        CRGB color = CRGB::White;
+        RGB color = {255, 255, 255};
         uint8_t thickness = 1;
     } overlay;
 

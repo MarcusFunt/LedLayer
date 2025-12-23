@@ -1,12 +1,14 @@
 #include <FastLED.h>
 #include <LedLayer.h>
+#include <FastLEDRenderer.h>
 
 #define NUM_LEDS 60
 #define LED_PIN 6
 
 CRGB leds[NUM_LEDS];
 LedLayer::RingLayout layout(NUM_LEDS);
-LedLayer::Display<5> display(leds, layout);
+LedLayer::FastLEDRenderer<NEOPIXEL, LED_PIN, GRB> renderer(leds, NUM_LEDS);
+LedLayer::Display<5> display(renderer, layout);
 
 float statusValue = 0.5f;
 float hour = 10.0f;
@@ -14,7 +16,7 @@ float minute = 15.0f;
 float second = 30.0f;
 
 void setup() {
-    FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, NUM_LEDS);
+    renderer.begin();
 
     LedLayer::LayerConfig statusLayer;
     statusLayer.source = &statusValue;
@@ -27,7 +29,7 @@ void setup() {
     hourHand.inMax = 12;
     hourHand.wrap = true;
     hourHand.mode = LedLayer::ModeType::OVERLAY_MARKER_THICK;
-    hourHand.overlay.color = CRGB::Red;
+    hourHand.overlay.color = {255, 0, 0};
     hourHand.overlay.thickness = 3;
     display.addLayer(hourHand);
 
@@ -37,7 +39,7 @@ void setup() {
     minuteHand.inMax = 60;
     minuteHand.wrap = true;
     minuteHand.mode = LedLayer::ModeType::OVERLAY_MARKER_THICK;
-    minuteHand.overlay.color = CRGB::Green;
+    minuteHand.overlay.color = {0, 255, 0};
     minuteHand.overlay.thickness = 2;
     display.addLayer(minuteHand);
 
@@ -47,7 +49,7 @@ void setup() {
     secondHand.inMax = 60;
     secondHand.wrap = true;
     secondHand.mode = LedLayer::ModeType::OVERLAY_MARKER_SINGLE;
-    secondHand.overlay.color = CRGB::Blue;
+    secondHand.overlay.color = {0, 0, 255};
     display.addLayer(secondHand);
 
     display.begin();
@@ -65,6 +67,5 @@ void loop() {
 
 
     display.tick(millis());
-    FastLED.show();
     delay(10);
 }

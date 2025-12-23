@@ -1,6 +1,6 @@
 #pragma once
 
-#include <FastLED.h>
+#include "Renderer.h"
 
 namespace LedLayer {
 
@@ -18,7 +18,7 @@ enum class NotifMode : uint8_t {
 struct Notification {
     NotifType type = NotifType::FLASH;
     NotifMode mode = NotifMode::OVERRIDE;
-    CRGB color = CRGB::White;
+    RGB color = {255, 255, 255};
     uint32_t startMs = 0;
     uint32_t durationMs = 500;
     uint8_t priority = 0;

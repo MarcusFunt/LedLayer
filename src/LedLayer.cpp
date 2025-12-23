@@ -1,12 +1,14 @@
+#include <algorithm>
 #include "Display.h"
 #include "Layout.h"
+#include "Color.h"
 #include <cmath>
 
 namespace LedLayer {
 
 template<uint8_t MAX_LAYERS, uint8_t MAX_NOTIFS>
-Display<MAX_LAYERS, MAX_NOTIFS>::Display(CRGB* leds, Layout& layout)
-    : _leds(leds), _layout(layout) {}
+Display<MAX_LAYERS, MAX_NOTIFS>::Display(Renderer& renderer, Layout& layout)
+    : _renderer(renderer), _layout(layout) {}
 
 template<uint8_t MAX_LAYERS, uint8_t MAX_NOTIFS>
 bool Display<MAX_LAYERS, MAX_NOTIFS>::addLayer(const LayerConfig& cfg) {
@@ -120,7 +122,7 @@ void Display<MAX_LAYERS, MAX_NOTIFS>::tick(uint32_t nowMs) {
         switch (track) {
             case TrackType::COLOR: {
                 if (!colorTrack.active || cfg.priority >= _maxColorPri) {
-                    CRGB c = CRGB::Black;
+                    RGB c = {0, 0, 0};
                     switch (cfg.mode) {
                         case ModeType::COLOR_STATE_PALETTE:
                         case ModeType::COLOR_CATEGORY_PALETTE: {
@@ -136,11 +138,11 @@ void Display<MAX_LAYERS, MAX_NOTIFS>::tick(uint32_t nowMs) {
                             uint8_t r = uint8_t((1.0f - t) * cfg.gradient.from.r + t * cfg.gradient.to.r);
                             uint8_t g = uint8_t((1.0f - t) * cfg.gradient.from.g + t * cfg.gradient.to.g);
                             uint8_t b = uint8_t((1.0f - t) * cfg.gradient.from.b + t * cfg.gradient.to.b);
-                            c = CRGB(r, g, b);
+                            c = {r, g, b};
                         } break;
                         case ModeType::COLOR_VALUE_HUE: {
                             uint8_t h = uint8_t(val * 255.0f);
-                            c = CHSV(h, 255, 255);
+                            c = hsvToRgb(h, 255, 255);
                         } break;
                         case ModeType::COLOR_BINARY: {
                             c = val >= 0.5f ? cfg.gradient.to : cfg.gradient.from;
@@ -215,7 +217,7 @@ void Display<MAX_LAYERS, MAX_NOTIFS>::tick(uint32_t nowMs) {
     }
 
     uint16_t n = _layout.size();
-    CRGB baseColor = colorTrack.active ? colorTrack.color : CRGB::Black;
+    RGB baseColor = colorTrack.active ? colorTrack.color : RGB{0, 0, 0};
     float globalBright = brightnessTrack.active ? brightnessTrack.scale : 1.0f;
     if (globalBright < 0.0f) globalBright = 0.0f;
     if (globalBright > brightnessTrack.limit) globalBright = brightnessTrack.limit;
@@ -261,14 +263,16 @@ void Display<MAX_LAYERS, MAX_NOTIFS>::tick(uint32_t nowMs) {
             }
         }
 
-        CRGB out = CRGB::Black;
+        RGB out = {0, 0, 0};
         if (lit) {
             out = baseColor;
             if (motionTrack.active) {
                 switch (motionTrack.pattern) {
                     case ModeType::MOTION_PULSE: {
-                        uint8_t pulseBrightness = sin8(nowMs / 8);
-                        out.nscale8(pulseBrightness);
+                        float pulseBrightness = (sinf(_now / 256.0f) + 1.0f) / 2.0f;
+                        out.r *= pulseBrightness;
+                        out.g *= pulseBrightness;
+                        out.b *= pulseBrightness;
                     } break;
                     case ModeType::MOTION_CHASE: {
                         if (motionTrack.segmentPixels > 0) {
@@ -287,9 +291,11 @@ void Display<MAX_LAYERS, MAX_NOTIFS>::tick(uint32_t nowMs) {
                         break;
                 }
             }
-            out.nscale8_video(uint8_t(globalBright * 255));
+            out.r *= globalBright;
+            out.g *= globalBright;
+            out.b *= globalBright;
         }
-        _leds[i] = out;
+        _renderer.setPixel(i, out);
     }
 
     for (uint8_t m = 0; m < overlayTrack.count; ++m) {
@@ -303,7 +309,7 @@ void Display<MAX_LAYERS, MAX_NOTIFS>::tick(uint32_t nowMs) {
                 if (idx + k >= n) break;
                 j = idx + k;
             }
-            _leds[j] = om.color;
+            _renderer.setPixel(j, om.color);
         }
     }
 
@@ -314,24 +320,34 @@ void Display<MAX_LAYERS, MAX_NOTIFS>::tick(uint32_t nowMs) {
                 uint16_t period = (_activeNotif.param == 0 ? 200 : _activeNotif.param);
                 bool on = ((elapsed / (period / 2)) % 2) == 0;
                 if (on) {
-                    if (_activeNotif.mode == NotifMode::OVERRIDE) {
-                        fill_solid(_leds, n, _activeNotif.color);
-                    } else {
-                        for (uint16_t i = 0; i < n; ++i) {
-                            _leds[i] += _activeNotif.color;
+                    for (uint16_t i = 0; i < n; ++i) {
+                        if (_activeNotif.mode == NotifMode::OVERRIDE) {
+                            _renderer.setPixel(i, _activeNotif.color);
+                        } else {
+                            RGB p = _renderer.getPixel(i);
+                            p.r = std::min(255, int(p.r) + _activeNotif.color.r);
+                            p.g = std::min(255, int(p.g) + _activeNotif.color.g);
+                            p.b = std::min(255, int(p.b) + _activeNotif.color.b);
+                            _renderer.setPixel(i, p);
                         }
                     }
                 }
             } break;
             case NotifType::PULSE: {
-                uint8_t a = sin8(uint8_t((elapsed / 4) & 0xFF));
+                float a = (sinf(elapsed / 256.0f) + 1.0f) / 2.0f;
                 for (uint16_t i = 0; i < n; ++i) {
-                    CRGB scaled = _activeNotif.color;
-                    scaled.nscale8_video(a);
+                    RGB scaled = _activeNotif.color;
+                    scaled.r *= a;
+                    scaled.g *= a;
+                    scaled.b *= a;
                     if (_activeNotif.mode == NotifMode::OVERRIDE) {
-                        _leds[i] = scaled;
+                        _renderer.setPixel(i, scaled);
                     } else {
-                        _leds[i] += scaled;
+                        RGB p = _renderer.getPixel(i);
+                        p.r = std::min(255, int(p.r) + scaled.r);
+                        p.g = std::min(255, int(p.g) + scaled.g);
+                        p.b = std::min(255, int(p.b) + scaled.b);
+                        _renderer.setPixel(i, p);
                     }
                 }
             } break;
@@ -350,14 +366,19 @@ void Display<MAX_LAYERS, MAX_NOTIFS>::tick(uint32_t nowMs) {
                         if (idx >= n) break;
                     }
                     if (_activeNotif.mode == NotifMode::OVERRIDE) {
-                        _leds[idx] = _activeNotif.color;
+                        _renderer.setPixel(idx, _activeNotif.color);
                     } else {
-                        _leds[idx] += _activeNotif.color;
+                        RGB p = _renderer.getPixel(idx);
+                        p.r = std::min(255, int(p.r) + _activeNotif.color.r);
+                        p.g = std::min(255, int(p.g) + _activeNotif.color.g);
+                        p.b = std::min(255, int(p.b) + _activeNotif.color.b);
+                        _renderer.setPixel(idx, p);
                     }
                 }
             } break;
         }
     }
+    _renderer.show();
 }
 
 template<uint8_t MAX_LAYERS, uint8_t MAX_NOTIFS>
@@ -405,6 +426,7 @@ bool Display<MAX_LAYERS, MAX_NOTIFS>::isExclusiveTrack(TrackType track) {
     return (track == TrackType::COLOR || track == TrackType::MASK || track == TrackType::MOTION);
 }
 
+template class Display<1, 4>;
 template class Display<8, 4>;
 
 }
