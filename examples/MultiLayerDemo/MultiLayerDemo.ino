@@ -1,12 +1,14 @@
 #include <FastLED.h>
 #include <LedLayer.h>
+#include <FastLEDRenderer.h>
 
 #define NUM_LEDS 60
 #define LED_PIN 6
 
 CRGB leds[NUM_LEDS];
 LedLayer::LinearLayout layout(NUM_LEDS);
-LedLayer::Display<4> display(leds, layout);
+LedLayer::FastLEDRenderer<NEOPIXEL, LED_PIN, GRB> renderer(leds, NUM_LEDS);
+LedLayer::Display<4> display(renderer, layout);
 
 float discreteState = 0.0f;
 float continuousValue = 0.5f;
@@ -14,15 +16,15 @@ float levelBar = 0.75f;
 float motionSpeed = 0.5f;
 
 void setup() {
-    FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, NUM_LEDS);
+    renderer.begin();
 
     LedLayer::LayerConfig colorLayer;
     colorLayer.source = &discreteState;
     colorLayer.mode = LedLayer::ModeType::COLOR_STATE_PALETTE;
     colorLayer.palette.count = 3;
-    colorLayer.palette.colors[0] = CRGB::Red;
-    colorLayer.palette.colors[1] = CRGB::Green;
-    colorLayer.palette.colors[2] = CRGB::Blue;
+    colorLayer.palette.colors[0] = {255, 0, 0};
+    colorLayer.palette.colors[1] = {0, 255, 0};
+    colorLayer.palette.colors[2] = {0, 0, 255};
     display.addLayer(colorLayer);
 
     LedLayer::LayerConfig brightnessLayer;
@@ -38,7 +40,7 @@ void setup() {
     LedLayer::LayerConfig motionLayer;
     motionLayer.source = &motionSpeed;
     motionLayer.mode = LedLayer::ModeType::MOTION_CHASE;
-    motionLayer.motion.color = CRGB::White;
+    motionLayer.motion.color = {255, 255, 255};
     motionLayer.motion.segmentPixels = 5;
     display.addLayer(motionLayer);
 
@@ -52,6 +54,5 @@ void loop() {
     motionSpeed = (sin(millis() / 4000.0f) + 1.0f) / 2.0f;
 
     display.tick(millis());
-    FastLED.show();
     delay(10);
 }
