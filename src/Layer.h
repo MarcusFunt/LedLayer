@@ -37,6 +37,7 @@ struct LayerConfig {
     } brightness;
     struct MaskParam {
         float start = 0.0f;
+        float amount = 1.0f;
     } mask;
     struct MotionParam {
         uint8_t segmentPixels = 3;

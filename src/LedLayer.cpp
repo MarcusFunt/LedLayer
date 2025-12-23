@@ -177,10 +177,18 @@ void Display<MAX_LAYERS, MAX_NOTIFS>::tick(uint32_t nowMs) {
             } break;
             case TrackType::MASK: {
                 if (!maskTrack.active || cfg.priority >= _maxMaskPri) {
-                    float start = cfg.mask.start;
-                    float amount = val;
+                    float start, amount;
+                    if (cfg.mode == ModeType::MASK_WINDOW_POSITION) {
+                        start = val;
+                        amount = cfg.mask.amount;
+                    } else {
+                        start = cfg.mask.start;
+                        amount = val;
+                    }
+
                     if (amount < 0.0f) amount = 0.0f;
                     if (amount > 1.0f) amount = 1.0f;
+
                     maskTrack.active = true;
                     maskTrack.start = start;
                     maskTrack.amount = amount;
@@ -279,6 +287,11 @@ void Display<MAX_LAYERS, MAX_NOTIFS>::tick(uint32_t nowMs) {
 
             if (motionTrack.active) {
                 switch (motionTrack.pattern) {
+                    case ModeType::MOTION_SOLID: {
+                        out.r = std::max(out.r, motionTrack.color.r);
+                        out.g = std::max(out.g, motionTrack.color.g);
+                        out.b = std::max(out.b, motionTrack.color.b);
+                    } break;
                     case ModeType::MOTION_PULSE: {
                         float pulseBrightness = (sinf(_now / 256.0f) + 1.0f) / 2.0f;
                         out.r *= pulseBrightness;
@@ -438,6 +451,10 @@ bool Display<MAX_LAYERS, MAX_NOTIFS>::isExclusiveTrack(TrackType track) {
 }
 
 template class Display<1, 4>;
+template class Display<2, 4>;
+template class Display<3, 4>;
+template class Display<4, 4>;
+template class Display<5, 4>;
 template class Display<8, 4>;
 
 }
