@@ -134,11 +134,7 @@ void Display<MAX_LAYERS, MAX_NOTIFS>::tick(uint32_t nowMs) {
                             }
                         } break;
                         case ModeType::COLOR_VALUE_GRADIENT: {
-                            float t = val;
-                            uint8_t r = uint8_t((1.0f - t) * cfg.gradient.from.r + t * cfg.gradient.to.r);
-                            uint8_t g = uint8_t((1.0f - t) * cfg.gradient.from.g + t * cfg.gradient.to.g);
-                            uint8_t b = uint8_t((1.0f - t) * cfg.gradient.from.b + t * cfg.gradient.to.b);
-                            c = {r, g, b};
+                            // This mode is handled per-pixel. Defer color calculation.
                         } break;
                         case ModeType::COLOR_VALUE_HUE: {
                             uint8_t h = uint8_t(val * 255.0f);
@@ -152,6 +148,8 @@ void Display<MAX_LAYERS, MAX_NOTIFS>::tick(uint32_t nowMs) {
                     }
                     colorTrack.active = true;
                     colorTrack.color = c;
+                    colorTrack.layer = &cfg;
+                    colorTrack.value = val;
                     _maxColorPri = cfg.priority;
                 }
             } break;
@@ -265,7 +263,20 @@ void Display<MAX_LAYERS, MAX_NOTIFS>::tick(uint32_t nowMs) {
 
         RGB out = {0, 0, 0};
         if (lit) {
-            out = baseColor;
+            RGB pixelColor = baseColor;
+            if (colorTrack.active && colorTrack.layer && colorTrack.layer->mode == ModeType::COLOR_VALUE_GRADIENT) {
+                const auto& cfg = *colorTrack.layer;
+                float val = colorTrack.value;
+                if (val > 0 && t <= val) {
+                    float t_grad = t / val;
+                    uint8_t r = uint8_t((1.0f - t_grad) * cfg.gradient.from.r + t_grad * cfg.gradient.to.r);
+                    uint8_t g = uint8_t((1.0f - t_grad) * cfg.gradient.from.g + t_grad * cfg.gradient.to.g);
+                    uint8_t b = uint8_t((1.0f - t_grad) * cfg.gradient.from.b + t_grad * cfg.gradient.to.b);
+                    pixelColor = {r, g, b};
+                }
+            }
+            out = pixelColor;
+
             if (motionTrack.active) {
                 switch (motionTrack.pattern) {
                     case ModeType::MOTION_PULSE: {
