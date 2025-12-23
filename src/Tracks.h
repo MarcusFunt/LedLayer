@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Layer.h"
 #include "Mode.h"
 #include "Renderer.h"
 
@@ -16,6 +17,8 @@ enum class TrackType : uint8_t {
 struct ColorTrack {
     bool active = false;
     RGB color = {0, 0, 0};
+    const LayerConfig* layer = nullptr;
+    float value = 0.0f;
 };
 
 struct BrightnessTrack {
