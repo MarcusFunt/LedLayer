@@ -1,9 +1,9 @@
 # LedLayer Architecture Overview
 
-This document summarizes the planned architecture for the LedLayer Arduino library. It captures the layer → mode → track design, layout handling, and conflict resolution strategy so contributors can implement features consistently.
+This document summarizes the architecture for the LedLayer Arduino library. It captures the layer → mode → track design, layout handling, and conflict resolution strategy.
 
 ## Purpose and Scope
-LedLayer will let a single addressable LED strip or ring display multiple pieces of information simultaneously. The framework sits atop FastLED/NeoPixel and focuses on composable visual encodings rather than device I/O. New shapes (spirals, segmented rings, matrices) can be added by defining additional layouts.
+LedLayer lets a single addressable LED strip or ring display multiple pieces of information simultaneously. The framework sits atop FastLED and focuses on composable visual encodings rather than device I/O. New shapes (spirals, segmented rings, matrices) can be added by defining additional layouts.
 
 ## High-Level Pipeline
 `[Variables & Sensors] → [Layers] → [Modes] → [Tracks (FrameModel)] → [Layout-Aware Renderer] → LEDs → FastLED.show()`
@@ -29,10 +29,8 @@ Each layer encapsulates:
 5. **Mode parameters:** Palette choices, start positions, bar direction, etc.
 6. **Priority:** For resolving conflicts on exclusive tracks.
 
-During initialization, the library validates layer definitions, attaches filters, and checks for incompatible mode combinations.
-
 ## Tracks (Output Channels)
-Tracks represent independent dimensions of the output. Modes write to one track (motion speed modulation can pair with a pattern). Default tracks include:
+Tracks represent independent dimensions of the output. Modes write to one track. Default tracks include:
 
 - **COLOR (exclusive):** Base hue/palette.
 - **BRIGHTNESS (combinable):** Global intensity and dimming/limiting.
@@ -41,7 +39,7 @@ Tracks represent independent dimensions of the output. Modes write to one track 
 - **OVERLAY (combinable):** Markers and clock hands drawn atop other tracks.
 
 Combination rules:
-- Exclusive tracks: Highest-priority layer wins; conflicts cause init-time errors if unresolved.
+- Exclusive tracks: Highest-priority layer wins.
 - Combinable tracks: BRIGHTNESS multiplies or limits output; OVERLAY accumulates markers (blending by max/brightest).
 
 ## Modes (Visual Encodings)
@@ -85,9 +83,8 @@ Modes describe how a standardized layer value is encoded visually. They map to o
 - Cardinal Ticks / Quadrant Markers
 
 ## Conflict Resolution
-- Initialization checks for multiple layers claiming exclusive tracks; priority decides or initialization fails with a clear message.
+- Conflicts on exclusive tracks are resolved at runtime. The layer with the highest priority that is processed in the `tick()` method will be displayed.
 - Combinable tracks merge according to their rules (e.g., brightness multiplication, overlay blending).
-- Modes may declare incompatibilities (e.g., discourage scanner on rings) to help users choose sensible combinations.
 
 ## Renderer & Layout Integration
 - Normalized positions (`0..1`) are used throughout to stay layout-agnostic.
@@ -97,14 +94,3 @@ Modes describe how a standardized layer value is encoded visually. They map to o
 ## Notifications
 - Managed separately as temporary overrides with type (flash, pulse, chase), mode (override or overlay), color, duration, and priority.
 - Notifications queue by priority and revert to the baseline composition after completion.
-
-## Considerations and Extensions
-- **Memory footprint:** Use compile-time limits (e.g., `MAX_LAYERS`) suitable for AVR-class MCUs.
-- **Extensibility:** Add new layouts, modes, or tracks as needed; keep I/O decoupled from rendering.
-- **Gamma correction:** Optional curves can live in the brightness track.
-- **Testing utilities:** Simulation/preview tools would help iterate without hardware.
-
-## Next Steps
-- Finalize API surface for layers, modes, and layouts.
-- Define configuration structures and validation rules.
-- Add CI/tooling for formatting, linting, and board builds as the codebase grows.
