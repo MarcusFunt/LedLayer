@@ -1,0 +1,47 @@
+[
+  {
+    "name": "Acetone",
+    "formula": "C3H6O",
+    "cas": "67-64-1",
+    "description": "Common solvent used in laboratory cleaning and sample preparation.",
+    "hazards": ["Highly flammable", "Irritant"],
+    "uses": ["Degreasing", "Organic synthesis"],
+    "storage": "Store in a flammable cabinet away from oxidizers."
+  },
+  {
+    "name": "Ethanol",
+    "formula": "C2H6O",
+    "cas": "64-17-5",
+    "description": "Versatile solvent and disinfectant with broad laboratory applications.",
+    "hazards": ["Flammable", "Irritant"],
+    "uses": ["Disinfection", "Chromatography"],
+    "storage": "Keep tightly closed in a flammable storage area." 
+  },
+  {
+    "name": "Sodium Chloride",
+    "formula": "NaCl",
+    "cas": "7647-14-5",
+    "description": "Inorganic salt commonly used for buffer preparation and ionic strength control.",
+    "hazards": ["Low hazard"],
+    "uses": ["Buffer preparation", "Electrolyte studies"],
+    "storage": "Store at room temperature in a dry area."
+  },
+  {
+    "name": "Hydrochloric Acid",
+    "formula": "HCl",
+    "cas": "7647-01-0",
+    "description": "Strong mineral acid used for pH adjustment and cleaning glassware.",
+    "hazards": ["Corrosive", "Acid fumes"],
+    "uses": ["pH control", "Metal cleaning"],
+    "storage": "Store in corrosion-resistant containers within a ventilated acid cabinet." 
+  },
+  {
+    "name": "Sodium Hydroxide",
+    "formula": "NaOH",
+    "cas": "1310-73-2",
+    "description": "Strong base used for titrations, saponification, and neutralization reactions.",
+    "hazards": ["Corrosive", "Reactant with acids"],
+    "uses": ["Titrations", "Cleaning"],
+    "storage": "Store in airtight containers away from acids and moisture." 
+  }
+]
