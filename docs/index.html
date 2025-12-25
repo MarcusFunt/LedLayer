@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Laboratory Chemicals</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Laboratory Chemicals Catalog</h1>
+      <p class="tagline">
+        Automatically rendered from <code>chemicals/chemicals.json</code> in this repository.
+      </p>
+    </header>
+
+    <main>
+      <section class="controls">
+        <input
+          type="search"
+          id="search"
+          placeholder="Search by name, formula, CAS number, or hazard"
+          aria-label="Search chemicals"
+        />
+      </section>
+
+      <section id="chemicals" class="grid" aria-live="polite"></section>
+
+      <template id="chemical-card">
+        <article class="card">
+          <div class="card-header">
+            <h2 class="name"></h2>
+            <span class="formula"></span>
+          </div>
+          <p class="description"></p>
+          <dl class="meta">
+            <div>
+              <dt>CAS</dt>
+              <dd class="cas"></dd>
+            </div>
+            <div>
+              <dt>Hazards</dt>
+              <dd class="hazards"></dd>
+            </div>
+            <div>
+              <dt>Uses</dt>
+              <dd class="uses"></dd>
+            </div>
+            <div>
+              <dt>Storage</dt>
+              <dd class="storage"></dd>
+            </div>
+          </dl>
+        </article>
+      </template>
+    </main>
+
+    <footer>
+      <p>Data sourced from the repository's <code>chemicals</code> directory.</p>
+    </footer>
+
+    <script src="script.js"></script>
+  </body>
+</html>

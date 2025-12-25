@@ -68,6 +68,12 @@ For more detailed examples, please see the `examples` directory.
 
 - `scripts/smiles_to_image.py`: convert a SMILES string into a 2D molecular drawing saved as PNG or SVG. See [docs/smiles_to_image.md](docs/smiles_to_image.md) for usage.
 
+## GitHub Pages chemical catalog
+
+- Chemical metadata lives in [`chemicals/chemicals.json`](chemicals/chemicals.json) and is rendered into a searchable catalog at `docs/index.html`.
+- A GitHub Actions workflow (`.github/workflows/pages.yml`) builds and deploys the static site to GitHub Pages from the `main` branch.
+- To preview locally, open `docs/index.html` in a browser; the page reads directly from the checked-in JSON.
+
 ## License
 
 This library is released under the MIT License. See the `LICENSE` file for more details.
