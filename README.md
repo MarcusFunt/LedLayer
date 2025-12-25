@@ -64,10 +64,6 @@ void loop() {
 
 For more detailed examples, please see the `examples` directory.
 
-## Utility scripts
-
-- `scripts/smiles_to_image.py`: convert a SMILES string into a 2D molecular drawing saved as PNG or SVG. See [docs/smiles_to_image.md](docs/smiles_to_image.md) for usage.
-
 ## License
 
 This library is released under the MIT License. See the `LICENSE` file for more details.
